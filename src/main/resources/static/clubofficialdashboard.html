@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Dashboard | InfoNest</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 50%; border-radius: 10px; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .status-applied { color: blue; font-weight: bold; }
+        .status-approved { color: green; font-weight: bold; }
+        .status-rejected { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Club Official Dashboard</h1>
+            <p>Managing Club ID: <span id="displayClubId"></span></p>
+            <button onclick="window.InfoNest.logout()">Logout</button>
+        </header>
+
+        <div class="section">
+            <h3>Event Management</h3>
+            <button onclick="openModal('addEventModal')">Add New Event</button>
+            <button onclick="openModal('updateSearchModal')">Update Existing Event</button>
+        </div>
+
+        <div class="section">
+            <h3>Registrations & Submissions</h3>
+            <button onclick="loadSubmissions()">Refresh Submissions</button>
+            <table width="100%" border="1" style="margin-top: 15px;">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Event ID</th>
+                        <th>Form Data (JSON)</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="submissionBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addEventModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Event</h3>
+            <form id="addEventForm">
+                <input type="text" id="addEventName" placeholder="Event Name" required><br><br>
+                <textarea id="addDescription" placeholder="Event Description"></textarea><br><br>
+                <input type="text" id="addRegLink" placeholder="Registration Link (or 'club_form_link')"><br><br>
+                <button type="submit">Create Event</button>
+                <button type="button" onclick="closeModal('addEventModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="updateSearchModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Event</h3>
+            <div id="searchStep">
+                <input type="text" id="searchEventName" placeholder="Enter Event Name to Fetch">
+                <button onclick="fetchEventForUpdate()">Fetch Details</button>
+            </div>
+            
+            <form id="editEventForm" style="display:none; margin-top:20px;">
+                <input type="hidden" id="editEventId">
+                <label>Event Name:</label><br>
+                <input type="text" id="editEventName" readonly><br><br>
+                <label>Description:</label><br>
+                <textarea id="editDescription" required></textarea><br><br>
+                <label>Form/External Link:</label><br>
+                <input type="text" id="editRegLink" required><br><br>
+                <button type="submit">Update Event</button>
+            </form>
+            <br>
+            <button type="button" onclick="closeModal('updateSearchModal')">Close</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="faculty_db.js"></script>
+</body>
+</html>

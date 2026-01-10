@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>InfoNest - Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h1>InfoNest</h1>
+        <div id="nav-buttons">
+            <a href="index.html">Home</a>
+            <a href="clubdashboard.html">Clubs</a>
+            <button id="loginBtn" onclick="location.href='login.html'">Login</button>
+            <button id="signupBtn" onclick="location.href='signup.html'">Signup</button>
+            <button id="dashboardBtn" style="display:none;" onclick="goToMyDashboard()">Go to Dashboard</button>
+            <button id="logoutBtn" style="display:none;" onclick="window.InfoNest.logout()">Logout</button>
+        </div>
+    </nav>
+    <section>
+        <h2>Welcome to InfoNest</h2>
+        <p>Your central hub for campus events and club recruitments.</p>
+    </section>
+
+    <script src="main.js"></script>
+    <script>
+        window.onload = () => {
+    // Check if the user has a token
+    if (window.InfoNest.isAuthenticated()) {
+        // Instead of redirecting, just toggle the buttons
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('dashboardBtn').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        
+        
+        console.log("User is logged in. Staying on Home page.");
+    }
+};
+
+function goToMyDashboard() {
+    const { role } = window.InfoNest.getAuthData();
+    window.InfoNest.redirectToDashboard(role);
+}
+    </script>
+</body>
+</html>

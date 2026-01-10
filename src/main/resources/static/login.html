@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - InfoNest</title>
+</head>
+<body>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="role">
+            <option value="STUDENT">Student</option>
+            <option value="FACULTY">Club Official</option>
+            <option value="ADMIN">Admin</option>
+        </select>
+        <button type="submit">Login</button>
+    </form>
+    <script src="main.js"></script>
+    <script src="login.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loginData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value
+            };
+
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('userId', data.userId);
+
+                // CHECK INTENT
+                const savedEventId = localStorage.getItem('savedEventId');
+                if (savedEventId) {
+                    // Logic to handle saved registration
+                    window.location.href = 'clubdashboard.html'; 
+                } else {
+                    // Direct Dashboard Redirect
+                    if (data.role === 'ADMIN') window.location.href = 'admin_db.html';
+                    else if (data.role === 'FACULTY') window.location.href = 'faculty_db.html';
+                    else window.location.href = 'student_db.html';
+                }
+            } else {
+                alert("Invalid Credentials");
+            }
+        });
+        
+    </script>
+</body>
+</html>
