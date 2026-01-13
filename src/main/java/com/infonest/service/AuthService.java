@@ -39,6 +39,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setRole(request.getRole().toUpperCase()); // Logic: Roles should be uppercase (ADMIN, STUDENT)
         user.setClubId(request.getClubId());
+
         
         // 3. Encrypt password using BCrypt
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -68,7 +69,8 @@ public class AuthService {
                 user.getRole(),
                 user.getFirstName(),
                 user.getClubId(), // Admin will get 'null' here, which is correct
-                 user.getUserId()
+                 user.getUserId(),
+                 user.getEmail()
             );
         } else {
             throw new RuntimeException("Error: Invalid email or password");

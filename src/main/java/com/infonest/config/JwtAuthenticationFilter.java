@@ -27,17 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // 1. Auth endpoints (Login/Signup) ko filter se bahar rakhein
       String path = request.getServletPath();
-
-if (
-    path.equals("/") || 
-    path.endsWith(".html") || 
-    path.endsWith(".js") ||   // ".startsWith" ko ".endsWith" karein
-    path.endsWith(".css") ||  // ".startsWith" ko ".endsWith" karein
-    path.startsWith("/api/v1/auth") || 
-    path.startsWith("/api/v1/clubs") || 
-    path.startsWith("/js/") || 
-    path.startsWith("/css/")
-) {
+if (path.equals("/") || path.endsWith(".html") || path.endsWith(".js") || 
+    path.endsWith(".css") || path.startsWith("/api/v1/auth")) {
     filterChain.doFilter(request, response);
     return;
 }

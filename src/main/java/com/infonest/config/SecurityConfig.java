@@ -45,9 +45,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .authorizeHttpRequests(auth -> auth
             // 1. Auth & Static Pages: Sabke liye open
             // SecurityConfig.java mein ye ensure karein:
-.requestMatchers("/api/v1/auth/**").permitAll() 
-.requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/*.js", "/js/**").permitAll()
-            .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/css/**", "/js/**", "/*.js" ).permitAll()
+            .requestMatchers("/api/v1/auth/**").permitAll() 
+            .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/css/**", "/js/**", "/*.js","/clubdashboard.html" ).permitAll()
              .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/all").permitAll()
             // 2. Public Events: Bina login ke events dekhne ke liye
             .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
@@ -61,7 +60,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             
             // 5. Student/Registration: Sabhi authenticated users ke liye
             .requestMatchers("/api/v1/student/**").authenticated()
-            
+.requestMatchers("/student_db.html").hasRole("STUDENT")
+.requestMatchers("/clubofficialdashboard.html").hasRole("FACULTY")
             .anyRequest().authenticated()
         )
         
@@ -70,16 +70,19 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         
     return http.build();
 }
-    @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // React ka URL
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+ @Bean
+public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    
+    // '*' ki jagah exact URL dein
+    configuration.setAllowedOrigins(Arrays.asList("localhost:8081")); 
+    
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+    configuration.setAllowCredentials(true);
+    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+}   
 }

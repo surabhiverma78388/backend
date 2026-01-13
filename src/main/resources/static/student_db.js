@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Fetch all registrations for this student
-        const response = await window.InfoNest.authenticatedFetch(`/student/my-registrations/${auth.userId}`);
+        const response = await window.InfoNest.authenticatedFetch(`/api/v1/student/my-registrations/${auth.userId}`);
         const registrations = await response.json();
 
         const tbody = document.getElementById('registrationBody');
