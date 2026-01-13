@@ -27,7 +27,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Yeh password ko encrypt karke database mein save karne ke kaam aayega
         return new BCryptPasswordEncoder();
     }
 
@@ -37,52 +36,45 @@ public class SecurityConfig {
     }
 
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        
-        .authorizeHttpRequests(auth -> auth
-            // 1. Auth & Static Pages: Sabke liye open
-            // SecurityConfig.java mein ye ensure karein:
-            .requestMatchers("/api/v1/auth/**").permitAll() 
-            .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/css/**", "/js/**", "/*.js","/clubdashboard.html" ).permitAll()
-             .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/all").permitAll()
-            // 2. Public Events: Bina login ke events dekhne ke liye
-            .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
-            // 2. Clubs & Events (Naya: /api/v1/clubs/** tak permit kiya taki details API bhi chale)
-            .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/**").permitAll()
-            // 3. Admin Routes: Sirf ADMIN role ke liye (Spring internally ROLE_ADMIN dhoondta hai)
-            .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-            
-            // 4. Faculty/Club Routes: Sirf FACULTY ke liye
-            .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")
-            
-            // 5. Student/Registration: Sabhi authenticated users ke liye
-            .requestMatchers("/api/v1/student/**").authenticated()
-.requestMatchers("/student_db.html").hasRole("STUDENT")
-.requestMatchers("/clubofficialdashboard.html").hasRole("FACULTY")
-            .anyRequest().authenticated()
-        )
-        
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
-    return http.build();
-}
- @Bean
-public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    
-    // '*' ki jagah exact URL dein
-    configuration.setAllowedOrigins(Arrays.asList("localhost:8081")); 
-    
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-    configuration.setAllowCredentials(true);
-    
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-}   
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
+                // Auth endpoints open
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                // Allow public access to static pages (frontend will check role/client-side)
+                .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/student_db.html", "/clubofficialdashboard.html", "/clubdashboard.html", "/css/**", "/js/**", "/*.js").permitAll()
+                // Public APIs
+                .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/all").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
+                .requestMatchers("/api/v1/clubs/**").permitAll()
+                // Admin APIs
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // Faculty APIs
+                .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")
+                // Student/Registration APIs require authentication
+                .requestMatchers("/api/v1/student/**").authenticated()
+                // everything else authenticated
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Use full origin(s) including scheme: e.g. http://localhost:3000
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

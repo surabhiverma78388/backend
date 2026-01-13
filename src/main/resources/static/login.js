@@ -1,50 +1,51 @@
-// login.js
+// login.js - single, canonical login handler
 
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    if (!form) return;
 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    try {
-        const response = await fetch('/api/v1/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-        if (response.ok) {
-            const data = await response.json();
+        try {
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-            // 1. Data Save karein (Token, Role, ID)
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
-            localStorage.setItem('userId', data.userId);
-            localStorage.setItem('firstName', data.firstName);
-            if (data.clubId) {
-        localStorage.setItem('clubId', data.clubId);
-    }
+            if (response.ok) {
+                const data = await response.json();
 
-            // 2. INTENT CHECK: Kya user register karne aaya tha?
-            if (data.role === 'STUDENT') {
-                // handleSavedIntent check karega ki koi event register hona baaki hai ya nahi
-                const redirected = await window.InfoNest.handleSavedIntent();
-                
-                // Agar koi saved action nahi tha, toh normal dashboard par bhej do
-                if (!redirected) {
+                // Save auth data
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('firstName', data.firstName || '');
+                if (data.clubId) {
+                    localStorage.setItem('clubId', data.clubId);
+                }
+
+                // If student, try to handle any saved intent (registration)
+                if (data.role === 'STUDENT') {
+                    const redirected = await window.InfoNest.handleSavedIntent();
+                    if (!redirected) {
+                        window.InfoNest.redirectToDashboard(data.role);
+                    }
+                } else {
+                    // Faculty/Admin redirect
                     window.InfoNest.redirectToDashboard(data.role);
                 }
             } else {
-                // Faculty ya Admin ke liye normal redirect
-                window.InfoNest.redirectToDashboard(data.role);
+                const error = await response.text();
+                alert("Login Failed: " + error);
             }
-
-        } else {
-            const error = await response.text();
-            alert("Login Failed: " + error);
+        } catch (err) {
+            console.error("Login Error:", err);
+            alert("Something went wrong. Please try again.");
         }
-    } catch (err) {
-        console.error("Login Error:", err);
-        alert("Something went wrong. Please try again.");
-    }
+    });
 });

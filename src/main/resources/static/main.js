@@ -28,18 +28,27 @@ const getQueryParam = (param) => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 };
+
 // 4. API UTILITY: Standardized Fetch that automatically adds the JWT Bearer Token
 async function authenticatedFetch(endpoint, options = {}) {
     const { token } = getAuthData();
-    
-    const defaultHeaders = {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
+
+    // Build headers sensibly: start from options.headers (if any)
+    const headers = { ...(options.headers || {}) };
+
+    // Only set Content-Type if not provided and body is not FormData (FormData sets its own multipart boundary)
+    if (!headers['Content-Type'] && !(options.body instanceof FormData) && options.body !== undefined) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    // Only add Authorization if token exists
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
-        headers: { ...defaultHeaders, ...options.headers }
+        headers
     });
 
     // If the backend returns 401 (Unauthorized) or 403 (Forbidden), the token is likely invalid
@@ -52,7 +61,6 @@ async function authenticatedFetch(endpoint, options = {}) {
 }
 
 // 5. ROLE-BASED REDIRECT LOGIC
-// Maps the 'role' from backend to your specific HTML dashboard files
 function redirectToDashboard(role) {
     switch (role) {
         case 'ADMIN':
@@ -70,7 +78,6 @@ function redirectToDashboard(role) {
 }
 
 // 6. INTENT RECOVERY: Handles "Register Now" logic after a user logs in
-// clubdashboard.html par click karne ka function
 async function handleRegisterClick(eventId, regLink) {
     // Intent Capture
     localStorage.setItem('savedEventId', eventId);
@@ -83,49 +90,75 @@ async function handleRegisterClick(eventId, regLink) {
         return;
     }
 
-    // Agar pehle se logged in hai toh seedhe process karein
+    // If already logged in, proceed
     await processRegistration();
 }
 
-// Registration process karne ka main function
+// Registration process main function
+// Returns true if it performed a redirect/registration action, false otherwise
 async function processRegistration() {
     const eventId = localStorage.getItem('savedEventId');
     const link = localStorage.getItem('savedLink');
     const userId = localStorage.getItem('userId');
 
-    if (!eventId || !userId) return;
+    if (!eventId || !userId) return false;
 
     // BRANCH A: Internal Club Form
     if (link === "club_form_link") {
-        const response = await fetch('/api/v1/student/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-            body: JSON.stringify({ eventId, userId })
-        });
-        const data = await response.json();
-        
-        // regId save karein taaki form submit karte waqt kaam aaye
-        localStorage.setItem('currentRegId', data.regId);
-        
-        localStorage.removeItem('savedEventId');
-        localStorage.removeItem('savedLink');
-        window.location.href = 'club_form.html';
-    } 
-    // BRANCH B: External Link
-    else {
-        const confirmAction = prompt("Are you sure you want to register? Type 'confirm' to proceed:");
-        if (confirmAction && confirmAction.toLowerCase() === 'confirm') {
-            await fetch('/api/v1/student/register', {
+        try {
+            const response = await fetch('/api/v1/student/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
                 body: JSON.stringify({ eventId, userId })
             });
 
+            if (!response.ok) {
+                console.error('Failed to create registration', await response.text());
+                return false;
+            }
+
+            const data = await response.json();
+
+            // regId save for later form submit
+            if (data && data.regId) {
+                localStorage.setItem('currentRegId', data.regId);
+            }
+
             localStorage.removeItem('savedEventId');
             localStorage.removeItem('savedLink');
-            
-            window.open(link, '_blank'); // External form naye tab mein
-            window.location.href = 'student_db.html'; // Main page dashboard par
+
+            // Navigate to internal club form
+            window.location.href = 'club_form.html';
+            return true;
+        } catch (err) {
+            console.error("processRegistration error:", err);
+            return false;
+        }
+    } 
+    // BRANCH B: External Link
+    else {
+        const confirmAction = prompt("Are you sure you want to register? Type 'confirm' to proceed:");
+        if (confirmAction && confirmAction.toLowerCase() === 'confirm') {
+            try {
+                await fetch('/api/v1/student/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    body: JSON.stringify({ eventId, userId })
+                });
+
+                localStorage.removeItem('savedEventId');
+                localStorage.removeItem('savedLink');
+
+                window.open(link, '_blank'); // open external form in new tab
+                window.location.href = 'student_db.html';
+                return true;
+            } catch (err) {
+                console.error("External registration error:", err);
+                return false;
+            }
+        } else {
+            // User canceled confirm
+            return false;
         }
     }
 }
@@ -135,7 +168,7 @@ async function handleSavedIntent() {
     return await processRegistration();
 }
 
-// 9. FINAL EXPORTS (Missing functions added here)
+// 9. FINAL EXPORTS
 window.InfoNest = {
     logout,
     isAuthenticated,
