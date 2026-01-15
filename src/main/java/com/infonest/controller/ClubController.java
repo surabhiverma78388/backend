@@ -29,32 +29,33 @@ public class ClubController {
     private UserRepository userRepository;
 
     @GetMapping("/{id}/details")
-public ResponseEntity<?> getClubFullDetails(@PathVariable String id) {
-    Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> getClubFullDetails(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
 
-    // 1. Club Name aur ID fetch karein
-    Club club = clubRepository.findById(id).orElse(null);
-    response.put("club", club);
+        // 1. Club Name aur ID fetch karein
+        Club club = clubRepository.findById(id).orElse(null);
+        response.put("club", club);
 
-    // 2. Events fetch karein (Jisme Deadline aur Description included hai)
-    List<Event> events = eventRepository.findByClubId(id);
-    
-    // Logic to add registration count for each event
-    List<Map<String, Object>> eventsWithCounts = events.stream().map(event -> {
-        Map<String, Object> eventData = new HashMap<>();
-        eventData.put("details", event);
-        eventData.put("regCount", registrationRepository.countByEventId(event.getEventId()));
-        return eventData;
-    }).collect(Collectors.toList());
-    
-    response.put("events", eventsWithCounts);
+        // 2. Events fetch karein (Only visible events for public view)
+        List<Event> events = eventRepository.findByClubIdAndHiddenFalse(id);
 
-    // 3. Faculty details (Users filtered by club_id)
-    List<User> faculty = userRepository.findByClubId(id);
-    response.put("faculty", faculty);
+        // Logic to add registration count for each event
+        List<Map<String, Object>> eventsWithCounts = events.stream().map(event -> {
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("details", event);
+            eventData.put("regCount", registrationRepository.countByEventId(event.getEventId()));
+            return eventData;
+        }).collect(Collectors.toList());
 
-    return ResponseEntity.ok(response);
-}
+        response.put("events", eventsWithCounts);
+
+        // 3. Faculty details (Users filtered by club_id)
+        List<User> faculty = userRepository.findByClubId(id);
+        response.put("faculty", faculty);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<Club>> getAllClubs() {
         return ResponseEntity.ok(clubRepository.findAllByOrderByClubNameAsc());

@@ -16,14 +16,18 @@ public class Event {
     private String clubId;
     private String venueId;
     private String eventName;
-    
+
     @Column(columnDefinition = "TEXT")
     private String description;
-    
+
     private LocalDate eventDate;
     private LocalTime eventTime;
     private LocalDate deadline;
-    
+
     // Isme URL ya "club_form_link" store hoga
     private String registrationFormLink;
+
+    // Admin can hide events from public view
+    @Column(nullable = false)
+    private Boolean hidden = false;
 }

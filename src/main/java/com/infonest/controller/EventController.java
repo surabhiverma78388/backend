@@ -54,14 +54,23 @@ public class EventController {
             return ResponseEntity.ok(eventRepository.save(existingEvent));
         }).orElse(ResponseEntity.notFound().build());
     }
+
     @GetMapping("/upcoming")
     public ResponseEntity<List<Event>> getUpcomingEvents() {
-    // Agar aap Option 1 use kar rahe hain:
-    return ResponseEntity.ok(eventRepository.findByEventDateAfterOrderByEventDateAsc(LocalDate.now()));
-    
-    // Agar Option 2 use kar rahe hain:
-    // return ResponseEntity.ok(eventRepository.findUpcomingEvents());
-}
+        // Return visible events with eventDate >= today, sorted by date ascending
+        // (nearest first)
+        return ResponseEntity
+                .ok(eventRepository.findByHiddenFalseAndEventDateGreaterThanEqualOrderByEventDateAsc(LocalDate.now()));
+    }
+
+    // 6. PUBLIC: Get ALL events by clubId (sorted by date, for individual club
+    // page)
+    @GetMapping("/club/{clubId}")
+    public ResponseEntity<List<Event>> getEventsByClubId(@PathVariable String clubId) {
+        // Return all visible events for this club, sorted by date ascending
+        return ResponseEntity.ok(eventRepository.findByClubIdAndHiddenFalseOrderByEventDateAsc(clubId));
+    }
+
     // 5. FACULTY/ADMIN: Event delete karna
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('FACULTY', 'ADMIN')")

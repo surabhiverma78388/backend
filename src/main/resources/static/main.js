@@ -12,7 +12,8 @@ const getAuthData = () => {
         role: localStorage.getItem('role'),
         userId: localStorage.getItem('userId'),
         clubId: localStorage.getItem('clubId'),
-        firstName: localStorage.getItem('firstName')
+        firstName: localStorage.getItem('firstName'),
+        email: localStorage.getItem('email')
     };
 };
 
@@ -100,60 +101,48 @@ async function processRegistration() {
     const eventId = localStorage.getItem('savedEventId');
     const link = localStorage.getItem('savedLink');
     const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
 
     if (!eventId || !userId) return false;
 
-    // BRANCH A: Internal Club Form
+    // BRANCH A: Internal Club Form - Redirect to form page
     if (link === "club_form_link") {
-        try {
-            const response = await fetch('/api/v1/student/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-                body: JSON.stringify({ eventId, userId })
-            });
-
-            if (!response.ok) {
-                console.error('Failed to create registration', await response.text());
-                return false;
-            }
-
-            const data = await response.json();
-
-            // regId save for later form submit
-            if (data && data.regId) {
-                localStorage.setItem('currentRegId', data.regId);
-            }
-
-            localStorage.removeItem('savedEventId');
-            localStorage.removeItem('savedLink');
-
-            // Navigate to internal club form
-            window.location.href = 'club_form.html';
-            return true;
-        } catch (err) {
-            console.error("processRegistration error:", err);
-            return false;
-        }
+        // For internal form, just redirect to the form page
+        // The form page will handle creating and updating the registration
+        window.location.href = 'club_form.html';
+        return true;
     } 
-    // BRANCH B: External Link
+    // BRANCH B: External Link - Create registration first, then redirect
     else {
-        const confirmAction = prompt("Are you sure you want to register? Type 'confirm' to proceed:");
-        if (confirmAction && confirmAction.toLowerCase() === 'confirm') {
+        const confirmAction = confirm("You will be redirected to an external registration form. Continue?");
+        if (confirmAction) {
             try {
-                await fetch('/api/v1/student/register', {
+                // Create registration record first (formData will be blank)
+                const response = await fetch('/api/v1/student/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': 'Bearer ' + token 
+                    },
                     body: JSON.stringify({ eventId, userId })
                 });
 
-                localStorage.removeItem('savedEventId');
-                localStorage.removeItem('savedLink');
+                if (response.ok) {
+                    // Clear saved intent
+                    localStorage.removeItem('savedEventId');
+                    localStorage.removeItem('savedLink');
 
-                window.open(link, '_blank'); // open external form in new tab
-                window.location.href = 'student_db.html';
-                return true;
+                    // Redirect to external link
+                    window.location.href = link;
+                    return true;
+                } else {
+                    console.error('Failed to create registration', await response.text());
+                    alert("Registration failed. Please try again.");
+                    return false;
+                }
             } catch (err) {
                 console.error("External registration error:", err);
+                alert("Failed to register. Please try again.");
                 return false;
             }
         } else {

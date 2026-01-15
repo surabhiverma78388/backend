@@ -38,28 +38,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                // Auth endpoints open
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                // Allow public access to static pages (frontend will check role/client-side)
-                .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/student_db.html", "/clubofficialdashboard.html", "/clubdashboard.html", "/css/**", "/js/**", "/*.js").permitAll()
-                // Public APIs
-                .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/all").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
-                .requestMatchers("/api/v1/clubs/**").permitAll()
-                // Admin APIs
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                // Faculty APIs
-                .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")
-                // Student/Registration APIs require authentication
-                .requestMatchers("/api/v1/student/**").authenticated()
-                // everything else authenticated
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        // Auth endpoints open
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Allow public access to static pages (frontend will check role/client-side)
+                        .requestMatchers("/", "/index.html", "/login.html", "/signup.html", "/student_db.html",
+                                "/clubofficialdashboard.html", "/clubdashboard.html", "/indivisualclub.html",
+                                "/club_form.html", "/admin_db.html", "/css/**", "/js/**", "/*.js", "/*.html")
+                        .permitAll()
+                        // Public APIs
+                        .requestMatchers("/api/v1/events/upcoming", "/api/v1/clubs/all").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
+                        .requestMatchers("/api/v1/clubs/**").permitAll()
+                        // Admin APIs
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // Faculty APIs
+                        .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")
+                        // Student/Registration APIs - allow all authenticated roles
+                        .requestMatchers("/api/v1/student/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
+                        // everything else authenticated
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

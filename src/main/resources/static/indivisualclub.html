@@ -1,158 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:;base64,=">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Details - InfoNest</title>
+    <title>Club Details | InfoNest</title>
+    <link rel="icon" href="data:;base64,=">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6c5ce7; --secondary: #a29bfe; --danger: #ff7675; --grey: #636e72; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f9f9fb; }
-        .container { max-width: 900px; margin: auto; }
-        
-        /* Header Styling */
-        .club-header { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; text-align: center; }
-        h1 { color: var(--primary); margin: 0; font-size: 2.5rem; }
+        :root {
+            --background: hsl(0 0% 96%);
+            --foreground: hsl(0 0% 9%);
+            --card: hsl(0 0% 98%);
+            --primary: hsl(20 90% 48%);
+            --primary-foreground: hsl(33 100% 96%);
+            --muted: hsl(0 0% 63%);
+            --border: hsl(0 0% 83%);
+            --radius: 0.75rem;
+            --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+            --accent: hsl(47 100% 96%);
+            --accent-foreground: hsl(37 92% 50%);
+        }
 
-        /* Faculty Section */
-        .faculty-card { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 5px solid var(--secondary); }
-        .faculty-list { list-style: none; padding: 0; display: flex; gap: 15px; flex-wrap: wrap; }
-        .faculty-item { background: #f1f2f6; padding: 8px 15px; border-radius: 20px; font-weight: 500; color: #2d3436; }
+        .dark {
+            --background: hsl(0 0% 9%);
+            --foreground: hsl(0 0% 98%);
+            --card: hsl(0 0% 14%);
+            --primary: hsl(27 95% 60%);
+            --primary-foreground: hsl(12 81% 14%);
+            --muted: hsl(0 0% 45%);
+            --border: hsl(0 0% 32%);
+            --accent: hsl(20 91% 14%);
+            --accent-foreground: hsl(43 96% 56%);
+        }
 
-        /* Event Cards */
-        .events-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .event-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eee; position: relative; }
-        .event-name { font-size: 1.4rem; color: #2d3436; margin-top: 0; }
-        .event-desc { color: #636e72; margin-bottom: 15px; }
-        .event-meta { font-size: 0.9rem; color: #b2bec3; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        
-        .reg-count { color: var(--primary); font-weight: bold; margin-bottom: 15px; display: block; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* Button Logic */
-        .btn-reg { padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
-        .btn-active { background: var(--primary); color: white; }
-        .btn-active:hover { background: #5849d4; transform: translateY(-2px); }
-        .btn-disabled { background: #dfe6e9; color: var(--grey); cursor: not-allowed; }
-        
-        .badge-expired { background: var(--danger); color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; position: absolute; top: 15px; right: 15px; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
 
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--primary); font-weight: bold; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .club-header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .club-header h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .club-header p {
+            color: var(--muted);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .event-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: 0.2s;
+        }
+
+        .event-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .event-header {
+            background: var(--accent);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .event-header h3 {
+            font-size: 1.125rem;
+            color: var(--accent-foreground);
+        }
+
+        .event-body {
+            padding: 1.25rem;
+        }
+
+        .event-body p {
+            font-size: 0.875rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        .event-footer {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        .theme-toggle {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--foreground);
+        }
     </style>
 </head>
-<body>
 
+<body class="dark">
     <div class="container">
-        <a href="clubdashboard.html" class="back-btn">← Back to Dashboard</a>
+        <header>
+            <a href="clubdashboard.html" class="btn btn-secondary">← Back to Events</a>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </header>
 
         <div class="club-header">
-            <h1 id="clubNameDisplay">Loading Club...</h1>
-            <p id="clubIdDisplay" style="color: #b2bec3;"></p>
+            <h1 id="clubName">Loading...</h1>
+            <p id="clubDescription"></p>
+            <p id="clubId" style="font-size: 0.75rem; margin-top: 0.5rem;"></p>
         </div>
 
-        <div class="faculty-card">
-            <h3>Faculty Associated with this Club</h3>
-            <div id="facultyList" class="faculty-list">
+        <!-- Faculty Section -->
+        <h2 class="section-title">👨‍🏫 Club Officials</h2>
+        <div id="facultyList" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            <span style="color: var(--muted);">Loading...</span>
+        </div>
+
+        <h2 class="section-title">📅 Events by this Club</h2>
+        <div class="events-grid" id="eventsGrid">
+            <div class="event-card">
+                <div class="event-body">
+                    <p>Loading events...</p>
                 </div>
-        </div>
-
-        <h2>Club Events</h2>
-        <div id="eventsList" class="events-grid">
             </div>
+        </div>
     </div>
 
-    <script src="js/main.js"></script>
+    <script src="main.js"></script>
     <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. URL se club_id nikalein (using main.js helper)
-            const clubId = window.InfoNest.getQueryParam('id');
+            const urlParams = new URLSearchParams(window.location.search);
+            const clubId = urlParams.get('clubId');
+
             if (!clubId) {
-                alert("No Club ID provided!");
+                alert('No club ID specified');
                 window.location.href = 'clubdashboard.html';
                 return;
             }
 
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            // Load full club details (club, events, faculty)
             try {
-                // 2. Aggregate Data Fetch karein
-                const response = await fetch(`/api/v1/clubs/${clubId}/details`);
-                if (!response.ok) throw new Error("Failed to fetch club details");
-                
-                const data = await response.json();
+                const res = await fetch(`/api/v1/clubs/${clubId}/details`);
+                if (!res.ok) {
+                    document.getElementById('clubName').textContent = clubId;
+                    return;
+                }
+                const data = await res.json();
 
-                // 3. Render Club Header
-                document.getElementById('clubNameDisplay').innerText = data.club.clubName;
-                document.getElementById('clubIdDisplay').innerText = `ID: ${data.club.clubId}`;
+                // Club info
+                if (data.club) {
+                    document.getElementById('clubName').textContent = data.club.clubName;
+                    document.getElementById('clubDescription').textContent = data.club.description || 'No description available.';
+                    document.getElementById('clubId').textContent = `Club ID: ${data.club.clubId}`;
+                } else {
+                    document.getElementById('clubName').textContent = clubId;
+                }
 
-                // 4. Render Faculty List
-                const facultyCont = document.getElementById('facultyList');
+                // Faculty list
+                const facultyList = document.getElementById('facultyList');
                 if (data.faculty && data.faculty.length > 0) {
-                    data.faculty.forEach(user => {
-                        const span = document.createElement('span');
-                        span.className = 'faculty-item';
-                        span.innerText = `Prof. ${user.firstName} ${user.lastName}`;
-                        facultyCont.appendChild(span);
-                    });
+                    facultyList.innerHTML = data.faculty.map(f => `
+                        <span style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            👤 ${f.firstName} ${f.lastName}
+                        </span>
+                    `).join('');
                 } else {
-                    facultyCont.innerHTML = "<p>No faculty listed for this club.</p>";
+                    facultyList.innerHTML = '<span style="color: var(--muted);">No faculty assigned</span>';
                 }
 
-                // 5. Render Events with Registration Count & Deadline Logic
-                const eventsCont = document.getElementById('eventsList');
+                // Events
+                const eventsGrid = document.getElementById('eventsGrid');
                 if (data.events && data.events.length > 0) {
-                    const today = new Date();
-
+                    eventsGrid.innerHTML = '';
                     data.events.forEach(item => {
-                        const event = item.details; // Based on your API structure
-                        const count = item.regCount;
-                        const deadline = new Date(event.deadline);
-                        const isExpired = deadline < today;
+                        const event = item.details;
+                        const regCount = item.regCount || 0;
+                        const isPast = event.eventDate && event.eventDate < today;
+                        const btnClass = isPast ? 'btn btn-secondary' : 'btn btn-primary';
+                        const btnDisabled = isPast ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
+                        const btnText = isPast ? 'Event Ended' : 'Register Now →';
 
-                        const card = document.createElement('div');
-                        card.className = 'event-card';
-                        card.innerHTML = `
-                            ${isExpired ? '<span class="badge-expired">EXPIRED</span>' : ''}
-                            <h3 class="event-name">${event.eventName}</h3>
-                            <p class="event-desc">${event.description || "No description provided."}</p>
-                            <span class="reg-count">Total Registrations: ${count}</span>
-                            <div class="event-meta">
-                                <span>📅 Date: ${event.eventDate}</span>
-                                <span>⏰ Time: ${event.eventTime}</span>
+                        eventsGrid.innerHTML += `
+                            <div class="event-card" style="${isPast ? 'opacity: 0.7;' : ''}">
+                                <div class="event-header">
+                                    <h3>${event.eventName}</h3>
+                                </div>
+                                <div class="event-body">
+                                    <p>${event.description || 'No description available.'}</p>
+                                    <div class="event-meta">
+                                        <span>📅 ${event.eventDate || 'TBD'}</span>
+                                        <span>⏰ ${event.eventTime || 'TBD'}</span>
+                                        <span>👥 ${regCount} registered</span>
+                                    </div>
+                                    <div class="event-meta">
+                                        <span>⏳ Deadline: ${event.deadline || 'None'}</span>
+                                    </div>
+                                </div>
+                                <div class="event-footer">
+                                    <button class="${btnClass}" ${btnDisabled} ${!isPast ? `onclick="window.InfoNest.handleRegisterClick(${event.eventId}, '${event.registrationFormLink || 'club_form_link'}')"` : ''}>
+                                        ${btnText}
+                                    </button>
+                                </div>
                             </div>
-                            <p class="event-meta" style="color: ${isExpired ? '#ff7675' : '#636e72'}">
-                                ⌛ Deadline: ${event.deadline}
-                            </p>
-                            <button 
-                                class="btn-reg ${isExpired ? 'btn-disabled' : 'btn-active'}" 
-                                ${isExpired ? 'disabled' : ''} 
-                                onclick="handleRegisterClick('${event.eventId}', '${event.registrationFormLink}')">
-                                ${isExpired ? 'Registration Closed' : 'Register Now'}
-                            </button>
                         `;
-                        eventsCont.appendChild(card);
                     });
                 } else {
-                    eventsCont.innerHTML = "<p>No events found for this club.</p>";
+                    eventsGrid.innerHTML = '<div class="event-card"><div class="event-body"><p>No events found for this club.</p></div></div>';
                 }
-
             } catch (err) {
-                console.error(err);
-                document.body.innerHTML = `<h2 style='text-align:center; padding:50px;'>Error loading club data. Please try again.</h2>`;
+                console.error('Error loading club details:', err);
             }
         });
-
-        // 6. Registration Logic
-        function handleRegisterClick(eventId, link) {
-            // Using your existing main.js intent logic
-            localStorage.setItem('savedEventId', eventId);
-            localStorage.setItem('savedLink', link);
-
-            if (!window.InfoNest.isAuthenticated()) {
-                alert("Please login to register for this event.");
-                window.location.href = 'login.html';
-            } else {
-                // If logged in, proceed to register logic from main.js or controller
-                window.location.href = link === "club_form_link" ? 'club_form.html' : link;
-            }
-        }
     </script>
 </body>
+
 </html>

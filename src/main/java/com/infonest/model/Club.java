@@ -18,4 +18,7 @@ public class Club {
 
     @Column(name = "club_name", nullable = false)
     private String clubName;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 }
